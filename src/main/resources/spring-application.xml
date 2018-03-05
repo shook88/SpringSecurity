@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:mvc="http://www.springframework.org/schema/mvc" 
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:tx="http://www.springframework.org/schema/tx"
+        xmlns:aop="http://www.springframework.org/schema/aop"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context   
+    http://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop.xsd
+    http://www.springframework.org/schema/mvc
+    http://www.springframework.org/schema/mvc/spring-mvc.xsd
+    ">
+
+
+	<context:component-scan base-package="com.homeshowping" />
+	<aop:aspectj-autoproxy/>
+	
+	<mvc:resources mapping="/resources/**" location="/resources/"/>
+	
+<context:property-placeholder location="classpath:config/mybatis/db.properties"/>
+   
+   <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+   	<property name="driverClassName" value="${jdbc.driverName}"/>
+    <property name="url" value="${jdbc.url}" />
+    <property name="username" value="${jdbc.user}" />
+    <property name="password" value="${jdbc.password}" />   	
+   </bean>
+   
+ 
+      <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+          	<property name="dataSource" ref="dataSource" />
+          	<property name="configLocation" value="classpath:config/mybatis/mybatis-config.xml" />
+          	<property name="mapperLocations" value="classpath:config/sqlmap/*.xml"/>
+          </bean>
+          
+          <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+          	<constructor-arg ref="sqlSessionFactory" />
+          </bean>
+   
+   <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+   	<property name="dataSource" ref="dataSource" />
+   </bean>
+
+	
+	
+	<bean id="messageSource"
+		class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basenames">
+			<list>
+				<value>message.label</value>
+			</list>
+		</property>
+		<property name="defaultEncoding" value="UTF-8" />
+	</bean>	
+
+<!-- 	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="smtp.naver.com"/>
+		<property name="port" value="587"/>
+		<property name="username" value="shook88"/>
+		<property name="password" value="Rmeodu902#"/>
+		<property name="defaultEncoding" value="utf-8"/>
+		 <property name="javaMailProperties">
+         <props>
+               <prop key="mail.transport.protocol">smtp</prop>
+               <prop key="mail.smtp.auth">true</prop>
+               <prop key="mail.smtp.starttls.enable">true</prop>
+               <prop key="mail.debug">true</prop>
+                <prop key="mail.smtp.ssl.enable">true</prop> 
+               
+         </props>
+         </property>
+	</bean> -->
+	
+	
+</beans>
+
+
+

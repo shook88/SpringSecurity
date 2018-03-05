@@ -1,0 +1,935 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.homeshowping.admin.dao.AdminDao">
+<!-- 
+	
+	<select id="login" parameterType="employeeVo" resultType="employeeVo"> 
+		select * from t_employee where e_id = #{e_id} and e_password = #{e_password}		
+	</select>
+	
+	
+
+
+*************************************** 공지사항 ******************************************
+	<select id="getNoticeList" parameterType="java.util.Map" resultType="noticeBoardVo">
+ 			select n_no, n_writer, n_title, n_content, n_viewCnt, date_format( n_regDate, '%Y-%m-%d' ) as n_regDate, n_type
+ 			from t_notice
+ 			where
+ 				n_type = #{ n_type }
+ 				<if test="titlecontent != null">
+	 				AND
+ 					(n_content like CONCAT('%',#{titlecontent},'%') or n_title like CONCAT('%',#{titlecontent},'%'))
+ 				</if>
+ 			order by n_no DESC
+ 			limit #{startPoint}, #{row}
+ 		</select> 
+ 	공지사항 총 갯수 
+ 		<select id="selectTotalCount" parameterType="java.util.Map" resultType="Integer">
+ 			select count(*) 
+ 			from t_notice
+ 			where
+ 				n_type = #{ n_type }
+ 				<if test="titlecontent != null"> 
+ 					AND
+ 					(n_content like CONCAT('%',#{titlecontent},'%') or n_title like CONCAT('%',#{titlecontent},'%'))
+ 				</if>
+ 		</select>
+ 	선택 공지사항 디테일 
+		<select id="selectOneNDetailByNo" parameterType="noticeBoardVo" resultType="noticeBoardVo">
+			 select n_no, n_writer, n_title, n_content, n_viewCnt, date_format( n_regDate, '%Y-%m-%d' ) as n_regDate, n_type
+			 from t_notice 
+			 where n_no = #{ n_no } 
+		</select> 		
+ 	updateViewCnt ++  
+ 		<select id="updateViewCnt" parameterType="noticeBoardVo">
+			update t_notice set n_viewCnt = #{n_viewCnt} where 	n_no = #{n_no}	
+ 		</select>
+
+
+	<select id="selectmainnoticelist" resultType="noticeBoardVo">
+		SELECT n_no, n_title, n_writer, n_content, n_viewCnt, date_format(n_regDate, '%Y-%m-%d') as n_regDate 
+		FROM t_notice 
+		where n_type='O'
+		ORDER BY n_no DESC LIMIT 0, 5
+	</select>
+*************************************** 공지사항 끝 ******************************************
+	
+	
+	<select id="selectIdByPhone" parameterType="hashMap" resultType="employeeVo">
+		select e_id, date_format(e_joinDate, '%Y-%m-%d') as e_joinDate from t_employee where e_name=#{name} and e_phone=#{phone}
+	</select>
+	
+	<select id="selectIdByBizNo" parameterType="java.util.Map" resultType="employeeVo">
+		select e.e_id, date_format(e_joinDate, '%Y-%m-%d') as e_joinDate from t_employee e, t_company c where e.e_name=#{name} and c.c_name=#{companyName} and c.c_bizNo=#{bizNo} and c.c_no = e.c_no;
+	</select>
+	
+	<select id="getIdbyId" parameterType="employeeVo" resultType="employeeVo"> 
+		select e_id from t_employee where e_id=#{e_id}
+	</select>
+	
+	<select id="changepassword" parameterType="employeeVo">
+		update t_employee set e_password=#{e_password} where e_id=#{e_id}
+	</select>
+*************************************** 창대 파트 회원가입  ******************************************
+
+	<select id="selectById" parameterType="String" resultType = "employeeVo">
+		select e_id, e_type from t_employee where e_id = #{e_id}
+	</select>
+	
+	<select id="selectByBizNo1" parameterType="String" resultType = "companyVo">
+		select * from t_company where c_bizNo = #{c_bizNo}
+	</select>
+
+	<select id="selectByBizNo2" parameterType="companyVo" resultType = "companyVo">
+		select * from (select * from t_company where c_no != #{c_no}) as view where c_bizNo = #{c_bizNo}
+	</select>
+
+	<select id="selectByCode" parameterType="String" resultType = "companyVo">
+		select * from t_company where c_code = #{c_code}
+	</select>
+	
+	
+	<insert id="insertCompany" parameterType="joinEmployeeVo" >
+		insert into t_company(c_name, c_address, c_lon, c_lat, c_phone, c_bizNo, c_oriName, c_saveName) 
+		values(#{c_name}, #{c_address}, #{c_lon}, #{c_lat}, #{c_phone}, #{c_bizNo}, #{c_oriName}, #{c_saveName})
+	</insert>
+
+	<insert id="insertEmployeeAnd" parameterType="joinEmployeeVo" >
+		insert into t_employee(e_id, e_name, e_password, e_phone, e_oriName, e_saveName, e_type, c_no) 
+		values(#{e_id}, #{e_name}, #{e_password}, #{e_phone}, #{e_oriName}, #{e_saveName}, 'O', (select c_no from t_company where c_name=#{c_name} and c_bizNo =#{c_bizNo}))
+	</insert>
+
+	<insert id="insertEmployee" parameterType="joinEmployeeVo" >
+		insert into t_employee(e_id, e_name, e_password, e_phone, e_oriName, e_saveName, c_no) 
+		values(#{e_id}, #{e_name}, #{e_password},#{e_phone}, #{e_oriName}, #{e_saveName}, (select c_no from t_company where c_name=#{c_name} and c_bizNo =#{c_bizNo}))
+	</insert>
+	
+	<update id="updateEmployeeCntP" parameterType="joinEmployeeVo">
+		update t_company set c_empCnt = c_empCnt+1 where c_bizNo = #{c_bizNo}
+	</update>
+
+	<update id="updateEmployeeCntM" parameterType="EmployeeVo">
+		update t_company set c_empCnt = c_empCnt-1 where c_no = #{c_no}
+	</update>
+	
+*************************************** 창대 파트 회원 정보  ******************************************
+
+
+	<select id="selectByNo" parameterType="int" resultType = "companyVo">
+		select c_no, c_name, c_address, c_lon, c_lat, c_phone, c_bizNo, c_accNo, date_format(c_signDate,'%Y-%m-%d') as c_signDate, 
+		date_format(c_regDate,'%Y-%m-%d') as c_regDate, c_bank, c_oriName, c_saveName, c_code, c_empCnt from t_company where c_no = #{c_no}
+	</select>
+
+	<select id="selectByCNo" parameterType="int" resultType = "employeeVo">
+		select e_no, e_id, e_name, e_password, e_phone, e_type, e_oriName, e_saveName, date_format(e_joinDate,'%Y-%m-%d') as e_joinDate, c_no 
+		from t_employee where c_no = #{c_no}
+	</select>
+	
+	
+	<update id="updateEmployeeOr" parameterType="hashMap">
+		update ${table} set ${key} = #{value} where ${no} = #{noVal}
+	</update>
+
+
+	<delete id="deleteEmployeeByNo" parameterType="int">
+		delete from t_employee where e_no = #{e_no}
+	</delete>
+
+	<update id="updateCompanyBizNo" parameterType="companyVo">
+		update t_company set c_bizNo = #{c_bizNo}, c_oriName = #{c_oriName}, c_saveName = #{c_saveName} where c_no = #{c_no}
+	</update>
+
+
+	<update id="updateEmpPicture" parameterType="employeeVo">
+		update t_employee set e_oriName = #{e_oriName}, e_saveName = #{e_saveName} where e_no = #{e_no}
+	</update>
+	<update id="updateCompanyAddress" parameterType="companyVo">
+		update t_company set c_address = #{c_address} where c_no = #{c_no}
+	</update>
+	
+	로그인 후 로그인 회원과 당일 일치하는 주문정보가져오기 11/29-30일 시작
+	지도
+	
+	<select id="selectAllmap" resultType="hashMap">
+		select t_m_order.mo_no, t_m_order.mo_orderNo, t_m_order.mo_startTime, t_e_order.eo_status, t_e_order.e_no, t_employee.e_name, t_member.m_name, t_member.m_address, t_member.m_lon, t_member.m_lat
+        from (((t_m_order inner join (select * from t_e_order where
+       	<foreach collection="list" item="employeeVo" separator="or">
+        	 e_no =#{employeeVo.e_no}       
+         </foreach>     
+         ) as t_e_order on t_m_order.mo_no = t_e_order.mo_no)
+        inner join t_member on t_m_order.m_no = t_member.m_no) inner join t_employee on t_employee.e_no = t_e_order.e_no) 
+        where date_format(t_m_order.mo_startTime, '%Y-%m-%d') = date_format(now(),'%Y-%m-%d')  
+        order by mo_startTime asc;
+	</select>
+	
+	<update id="updateEOrderStatus" parameterType="orderEmployeeVo">
+		update t_e_order
+		 set eo_startTime = #{eo_startTime}
+		 <if test='eo_status.equals("대기중")'>, eo_status = '출동중' </if> 
+		 <if test='eo_status.equals("출동중")'>, eo_status = '해방중' </if> 
+		 <if test='eo_status.equals("해방중")'>, eo_status = '해방완료'</if> 
+		  where mo_no = #{mo_no}
+	</update>
+	
+	<select id="selectEOrderByMoNo" parameterType="orderEmployeeVo" resultType="orderEmployeeVo">
+		select * from t_e_order where mo_no = #{mo_no}
+	</select>
+	
+	
+	지도 끝
+	로그인 후 로그인 회원과 당일 일치하는 주문정보가져오기 11/29-30일 끝
+
+***********************  12/15 노창대.  콜 관련 My Call 받아오기 시작 ***********************
+		
+		<select id="selectMyCall" parameterType="employeeVo" resultType="hashMap">
+		무엇이 필요하냐. t_m_order, t_member, t_service, #{e_no}
+		
+		select t_m_order.mo_no, t_m_order.e_no_first, date_format(t_m_order.mo_startTime,"%Y-%m-%d") as mo_startTime,
+		date_format(t_m_order.mo_startTime,"%Y%m%d%H") as dateHourForNoOneEmployee,
+		date_format(t_m_order.mo_startTime,"%Y%m%d") as dateForNoOneEmployee,
+		date_format(t_m_order.mo_startTime,"%Y-%m-%d %H:%i:%S") as dateHourMinuteForNoOneEmployee, 
+		t_member.m_address, t_member.m_lon, 
+		t_member.m_lat, t_member.m_gu, t_member.m_no, t_member.m_name, SUBSTRING(t_service.s_name,1,2) as s_shortName,
+		t_service.s_name, if(substring(s_name,1,1)='소',substring(s_name,1,9),substring(s_name,1,8)) s_longName,
+		t_service.s_no, cast(t_service.s_price as unsigned) as s_price, t_m_order.mo_total,
+		format(cast(t_m_order.mo_total as unsigned)*cast(t_service.s_price as unsigned),0) as mo_totalPrice, t_m_order.mo_freqType, 
+		t_m_order.mo_freqCycle, t_m_order.mo_orderNo 
+		from (select * from t_m_order where e_no_first=#{e_no} and mo_callFlag='ing') 
+		as t_m_order inner join t_member
+		on t_m_order.m_no = t_member.m_no inner join t_service on t_m_order.s_no=t_service.s_no;
+		
+		</select>
+
+	
+	<update id="dropEvent" parameterType="String">
+		drop event ${orderNo};
+	</update>
+	<update id="updateCallFlag">
+	
+	update t_m_order set mo_callFlag='ed' where mo_orderNo=#{orderNo}
+	
+	</update>
+	
+	
+	<insert id="insertEOrder" parameterType="hashMap">
+	insert into t_e_order(mo_no, e_no) values
+		<foreach collection="mo_noList" item="item" separator=",">
+		( #{item.mo_no}, #{userVo.e_no})
+		</foreach>
+	</insert>
+	
+	<delete id="deleteCancelCallByMoNo" parameterType="hashMap">
+		delete from t_cancelCall where mo_no = ${mo_no}
+	</delete>
+	
+	
+	<insert id="insertCancelCall" parameterType="hashMap">
+	
+		insert into t_cancelCall(mo_no, e_no) values(#{mo_no}, #{refuseMoNo.e_no_first});
+	
+	</insert>
+	
+	<select id="selectNoOneEmployeeValidation" parameterType="java.util.HashMap" resultType="hashMap">
+	
+	select
+scoreTable.e_no, scoreTable.e_name,
+scoreTable.mo_starAvg, scoreTable.lonlatGrade,
+scoreTable.profitGrade, scoreTable.subTimeGrade,
+(scoreTable.mo_starAvg+scoreTable.lonlatGrade+scoreTable.profitGrade+scoreTable.subTimeGrade) as totalGrade,
+scoreTable.s_priceSum, scoreTable.subTimeValue, scoreTable.m_lon,scoreTable.m_lat 
+from
+(select totalData.e_no, totalData.e_name, totalData.c_no, totalData.mo_no, totalData.subTimeValue, totalData.m_lon, totalData.m_lat,
+prevMonthData.s_priceSum, if(prevMonthData.mo_starAvg>0,prevMonthData.mo_starAvg,0) as mo_starAvg,
+
+(case when (ABS(totalData.m_lon -#{refuseMoNo.m_lon}) + 
+(ABS(totalData.m_lat-#{refuseMoNo.m_lat}))*3.3) >=0.5 then 1 when
+(ABS(totalData.m_lon -#{refuseMoNo.m_lon}) +
+(ABS(totalData.m_lat-#{refuseMoNo.m_lat}))*3.3) >=0.4 then 1.5 when
+(ABS(totalData.m_lon -#{refuseMoNo.m_lon}) +
+(ABS(totalData.m_lat-#{refuseMoNo.m_lat}))*3.3) >=0.3 then 2 when
+(ABS(totalData.m_lon -#{refuseMoNo.m_lon}) +
+(ABS(totalData.m_lat-#{refuseMoNo.m_lat}))*3.3) >=0.2 then 2.5 when
+(ABS(totalData.m_lon -#{refuseMoNo.m_lon}) +
+(ABS(totalData.m_lat-#{refuseMoNo.m_lat}))*3.3) >=0.1 then 3 when
+(ABS(totalData.m_lon -#{refuseMoNo.m_lon}) +
+(ABS(totalData.m_lat-#{refuseMoNo.m_lat}))*3.3) >=0.05 then 3.5 when
+(ABS(totalData.m_lon -#{refuseMoNo.m_lon}) +
+(ABS(totalData.m_lat-#{refuseMoNo.m_lat}))*3.3) >= 0 then 4 else 0.5 end) as
+lonlatGrade,
+
+(case when (prevMonthData.s_priceSum)-#{prevMonthOutCome}=0 then 3 
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >2000000 then 1.1
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1800000 then 1.3
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1600000 then 1.5
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1400000 then 1.7
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1200000 then 1.9
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1000000 then 2.1
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >800000 then 2.3
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >100000 then 2.5
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >50000 then 2.7
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >10000 then 2.9 else 2.95 end) as
+profitGrade,
+
+(case 
+when (totalData.subTimeValue) >= 540 then 1 
+when (totalData.subTimeValue) >= 480 then 1.2
+when (totalData.subTimeValue) >= 420 then 1.4
+when (totalData.subTimeValue) >= 360 then 1.6
+when (totalData.subTimeValue) >= 300 then 1.8
+when (totalData.subTimeValue) >= 240 then 2.0
+when (totalData.subTimeValue) >= 180 then 2.2
+when (totalData.subTimeValue) >= 120 then 2.4
+when (totalData.subTimeValue) >= 60 then 2.6
+else 0.5 end) as
+subTimeGrade
+
+from 
+(select t_employee.e_no, t_employee.e_name, t_employee.c_no,
+allMOrderNServiceNMemberNEOrderEmployee.mo_no, allMOrderNServiceNMemberNEOrderEmployee.s_no, 
+allMOrderNServiceNMemberNEOrderEmployee.m_no, allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,
+(Minute(Timediff(allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,#{refuseMoNo.dateHourMinuteForNoOneEmployee}))
++HOUR(Timediff(allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,#{refuseMoNo.dateHourMinuteForNoOneEmployee}))*60) as subTimeValue,
+allMOrderNServiceNMemberNEOrderEmployee.m_lon, allMOrderNServiceNMemberNEOrderEmployee.m_lat, 
+allMOrderNServiceNMemberNEOrderEmployee.m_gu
+from t_employee
+left join 
+(select 
+allMOrderNServiceNMemberNEOrder.mo_no, allMOrderNServiceNMemberNEOrder.s_no, 
+allMOrderNServiceNMemberNEOrder.m_no, allMOrderNServiceNMemberNEOrder.mo_startTime, 
+allMOrderNServiceNMemberNEOrder.mo_star, allMOrderNServiceNMemberNEOrder.s_price, 
+allMOrderNServiceNMemberNEOrder.m_lon, allMOrderNServiceNMemberNEOrder.m_lat, 
+allMOrderNServiceNMemberNEOrder.m_gu, allMOrderNServiceNMemberNEOrder.e_no,
+e.c_no
+from 
+(select 
+allMOrderNServiceNMember.mo_no, allMOrderNServiceNMember.s_no, 
+allMOrderNServiceNMember.m_no, allMOrderNServiceNMember.mo_startTime, 
+allMOrderNServiceNMember.mo_star, allMOrderNServiceNMember.s_price, 
+allMOrderNServiceNMember.m_lon, allMOrderNServiceNMember.m_lat, allMOrderNServiceNMember.m_gu, eo.e_no
+from 
+(select allMOrderNService.mo_no, allMOrderNService.s_no, 
+allMOrderNService.m_no, allMOrderNService.mo_startTime, 
+allMOrderNService.mo_star, allMOrderNService.s_price, 
+m.m_lon, m.m_lat, m.m_gu
+from (select mo.mo_no, mo.s_no, mo.m_no, mo.mo_startTime, mo.mo_star, s.s_price from t_m_order mo 
+inner join t_service s on mo.s_no=s.s_no) as allMOrderNService 
+inner join t_member m on allMOrderNService.m_no = m.m_no) as allMOrderNServiceNMember
+inner join t_e_order eo on allMOrderNServiceNMember.mo_no = eo.mo_no) as allMOrderNServiceNMemberNEOrder
+inner join t_employee e on allMOrderNServiceNMemberNEOrder.e_no = e.e_no
+where date_format(allMOrderNServiceNMemberNEOrder.mo_startTime,"%Y%m%d") = #{refuseMoNo.dateForNoOneEmployee}) as allMOrderNServiceNMemberNEOrderEmployee
+on t_employee.e_no = allMOrderNServiceNMemberNEOrderEmployee.e_no 
+where date_format(allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,"%Y%m%d%H") != #{refuseMoNo.dateHourForNoOneEmployee} or 
+date_format(allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,"%Y%m%d%H") is null) as totalData
+left join 
+
+(select 
+allMOrderNServiceNMemberNEOrderNEmployee.c_no,
+sum(allMOrderNServiceNMemberNEOrderNEmployee.s_price) s_priceSum,  
+avg(allMOrderNServiceNMemberNEOrderNEmployee.mo_star) mo_starAvg
+from (select 
+allMOrderNServiceNMemberNEOrder.mo_no, allMOrderNServiceNMemberNEOrder.s_no, 
+allMOrderNServiceNMemberNEOrder.m_no, allMOrderNServiceNMemberNEOrder.mo_startTime, 
+allMOrderNServiceNMemberNEOrder.mo_star, allMOrderNServiceNMemberNEOrder.s_price, 
+allMOrderNServiceNMemberNEOrder.m_lon, allMOrderNServiceNMemberNEOrder.m_lat, 
+allMOrderNServiceNMemberNEOrder.m_gu, allMOrderNServiceNMemberNEOrder.e_no,
+e.c_no
+from 
+(select 
+allMOrderNServiceNMember.mo_no, allMOrderNServiceNMember.s_no, 
+allMOrderNServiceNMember.m_no, allMOrderNServiceNMember.mo_startTime, 
+allMOrderNServiceNMember.mo_star, allMOrderNServiceNMember.s_price, 
+allMOrderNServiceNMember.m_lon, allMOrderNServiceNMember.m_lat, allMOrderNServiceNMember.m_gu, eo.e_no
+from 
+(select allMOrderNService.mo_no, allMOrderNService.s_no, 
+allMOrderNService.m_no, allMOrderNService.mo_startTime, 
+allMOrderNService.mo_star, allMOrderNService.s_price, 
+m.m_lon, m.m_lat, m.m_gu
+from (select mo.mo_no, mo.s_no, mo.m_no, mo.mo_startTime, mo.mo_star, s.s_price from t_m_order mo 
+inner join t_service s on mo.s_no=s.s_no) as allMOrderNService 
+inner join t_member m on allMOrderNService.m_no = m.m_no) as allMOrderNServiceNMember
+inner join t_e_order eo on allMOrderNServiceNMember.mo_no = eo.mo_no) as allMOrderNServiceNMemberNEOrder
+inner join t_employee e on allMOrderNServiceNMemberNEOrder.e_no = e.e_no
+where date_format(allMOrderNServiceNMemberNEOrder.mo_startTime, "%Y%m") = 
+if(substring((date_format(now(), "%Y%m")-1),5,2)='00',
+concat(substring((date_format(now(), "%Y%m")-1),1,4)-1,'12'),
+date_format(now(), "%Y%m")-1)) as allMOrderNServiceNMemberNEOrderNEmployee
+group by allMOrderNServiceNMemberNEOrderNEmployee.c_no) 
+
+as prevMonthData on totalData.c_no= prevMonthData.c_no) as scoreTable 
+left join ((select * from t_cancelCall where mo_no=#{mo_no}) as t_cancelCall) 
+on t_cancelCall.e_no = scoreTable.e_no where t_cancelCall.e_no is null
+order by totalGrade desc;
+	
+	</select>
+	
+	<update id="updateMOrderENoFirst" parameterType="hashMap">
+		
+	update t_m_order set e_no_first=(select lastOne.e_no from
+(select
+scoreTable.e_no, scoreTable.e_name,
+scoreTable.mo_starAvg, scoreTable.lonlatGrade,
+scoreTable.profitGrade, scoreTable.subTimeGrade,
+(scoreTable.mo_starAvg+scoreTable.lonlatGrade+scoreTable.profitGrade+scoreTable.subTimeGrade) as totalGrade
+from
+(select totalData.e_no, totalData.e_name, totalData.c_no, totalData.mo_no, totalData.subTimeValue, totalData.m_lon, totalData.m_lat,
+prevMonthData.s_priceSum, if(prevMonthData.mo_starAvg>0,prevMonthData.mo_starAvg,0) as mo_starAvg,
+
+(case when (ABS(totalData.m_lon -#{refuseMoNo.m_lon}) + 
+(ABS(totalData.m_lat-#{refuseMoNo.m_lat}))*3.3) >=0.5 then 1 when
+(ABS(totalData.m_lon -#{refuseMoNo.m_lon}) +
+(ABS(totalData.m_lat-#{refuseMoNo.m_lat}))*3.3) >=0.4 then 1.5 when
+(ABS(totalData.m_lon -#{refuseMoNo.m_lon}) +
+(ABS(totalData.m_lat-#{refuseMoNo.m_lat}))*3.3) >=0.3 then 2 when
+(ABS(totalData.m_lon -#{refuseMoNo.m_lon}) +
+(ABS(totalData.m_lat-#{refuseMoNo.m_lat}))*3.3) >=0.2 then 2.5 when
+(ABS(totalData.m_lon -#{refuseMoNo.m_lon}) +
+(ABS(totalData.m_lat-#{refuseMoNo.m_lat}))*3.3) >=0.1 then 3 when
+(ABS(totalData.m_lon -#{refuseMoNo.m_lon}) +
+(ABS(totalData.m_lat-#{refuseMoNo.m_lat}))*3.3) >=0.05 then 3.5 when
+(ABS(totalData.m_lon -#{refuseMoNo.m_lon}) +
+(ABS(totalData.m_lat-#{refuseMoNo.m_lat}))*3.3) >= 0 then 4 else 0.5 end) as
+lonlatGrade,
+
+(case when (prevMonthData.s_priceSum)-#{prevMonthOutCome}=0 then 3 
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >2000000 then 1.1
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1800000 then 1.3
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1600000 then 1.5
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1400000 then 1.7
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1200000 then 1.9
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1000000 then 2.1
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >800000 then 2.3
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >100000 then 2.5
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >50000 then 2.7
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >10000 then 2.9 else 2.95 end) as
+profitGrade,
+
+(case 
+when (totalData.subTimeValue) >= 540 then 1 
+when (totalData.subTimeValue) >= 480 then 1.2
+when (totalData.subTimeValue) >= 420 then 1.4
+when (totalData.subTimeValue) >= 360 then 1.6
+when (totalData.subTimeValue) >= 300 then 1.8
+when (totalData.subTimeValue) >= 240 then 2.0
+when (totalData.subTimeValue) >= 180 then 2.2
+when (totalData.subTimeValue) >= 120 then 2.4
+when (totalData.subTimeValue) >= 60 then 2.6
+else 0.5 end) as
+subTimeGrade
+
+from 
+(select t_employee.e_no, t_employee.e_name, t_employee.c_no,
+allMOrderNServiceNMemberNEOrderEmployee.mo_no, allMOrderNServiceNMemberNEOrderEmployee.s_no, 
+allMOrderNServiceNMemberNEOrderEmployee.m_no, allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,
+(Minute(Timediff(allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,#{refuseMoNo.dateHourMinuteForNoOneEmployee}))
++HOUR(Timediff(allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,#{refuseMoNo.dateHourMinuteForNoOneEmployee}))*60) as subTimeValue,
+allMOrderNServiceNMemberNEOrderEmployee.m_lon, allMOrderNServiceNMemberNEOrderEmployee.m_lat, 
+allMOrderNServiceNMemberNEOrderEmployee.m_gu
+from t_employee
+left join 
+(select 
+allMOrderNServiceNMemberNEOrder.mo_no, allMOrderNServiceNMemberNEOrder.s_no, 
+allMOrderNServiceNMemberNEOrder.m_no, allMOrderNServiceNMemberNEOrder.mo_startTime, 
+allMOrderNServiceNMemberNEOrder.mo_star, allMOrderNServiceNMemberNEOrder.s_price, 
+allMOrderNServiceNMemberNEOrder.m_lon, allMOrderNServiceNMemberNEOrder.m_lat, 
+allMOrderNServiceNMemberNEOrder.m_gu, allMOrderNServiceNMemberNEOrder.e_no,
+e.c_no
+from 
+(select 
+allMOrderNServiceNMember.mo_no, allMOrderNServiceNMember.s_no, 
+allMOrderNServiceNMember.m_no, allMOrderNServiceNMember.mo_startTime, 
+allMOrderNServiceNMember.mo_star, allMOrderNServiceNMember.s_price, 
+allMOrderNServiceNMember.m_lon, allMOrderNServiceNMember.m_lat, allMOrderNServiceNMember.m_gu, eo.e_no
+from 
+(select allMOrderNService.mo_no, allMOrderNService.s_no, 
+allMOrderNService.m_no, allMOrderNService.mo_startTime, 
+allMOrderNService.mo_star, allMOrderNService.s_price, 
+m.m_lon, m.m_lat, m.m_gu
+from (select mo.mo_no, mo.s_no, mo.m_no, mo.mo_startTime, mo.mo_star, s.s_price from t_m_order mo 
+inner join t_service s on mo.s_no=s.s_no) as allMOrderNService 
+inner join t_member m on allMOrderNService.m_no = m.m_no) as allMOrderNServiceNMember
+inner join t_e_order eo on allMOrderNServiceNMember.mo_no = eo.mo_no) as allMOrderNServiceNMemberNEOrder
+inner join t_employee e on allMOrderNServiceNMemberNEOrder.e_no = e.e_no
+where date_format(allMOrderNServiceNMemberNEOrder.mo_startTime,"%Y%m%d") = #{refuseMoNo.dateForNoOneEmployee}) as allMOrderNServiceNMemberNEOrderEmployee
+on t_employee.e_no = allMOrderNServiceNMemberNEOrderEmployee.e_no 
+where date_format(allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,"%Y%m%d%H") != #{refuseMoNo.dateHourForNoOneEmployee} or 
+date_format(allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,"%Y%m%d%H") is null) as totalData
+left join 
+
+(select 
+allMOrderNServiceNMemberNEOrderNEmployee.c_no,
+sum(allMOrderNServiceNMemberNEOrderNEmployee.s_price) s_priceSum,  
+avg(allMOrderNServiceNMemberNEOrderNEmployee.mo_star) mo_starAvg
+from (select 
+allMOrderNServiceNMemberNEOrder.mo_no, allMOrderNServiceNMemberNEOrder.s_no, 
+allMOrderNServiceNMemberNEOrder.m_no, allMOrderNServiceNMemberNEOrder.mo_startTime, 
+allMOrderNServiceNMemberNEOrder.mo_star, allMOrderNServiceNMemberNEOrder.s_price, 
+allMOrderNServiceNMemberNEOrder.m_lon, allMOrderNServiceNMemberNEOrder.m_lat, 
+allMOrderNServiceNMemberNEOrder.m_gu, allMOrderNServiceNMemberNEOrder.e_no,
+e.c_no
+from 
+(select 
+allMOrderNServiceNMember.mo_no, allMOrderNServiceNMember.s_no, 
+allMOrderNServiceNMember.m_no, allMOrderNServiceNMember.mo_startTime, 
+allMOrderNServiceNMember.mo_star, allMOrderNServiceNMember.s_price, 
+allMOrderNServiceNMember.m_lon, allMOrderNServiceNMember.m_lat, allMOrderNServiceNMember.m_gu, eo.e_no
+from 
+(select allMOrderNService.mo_no, allMOrderNService.s_no, 
+allMOrderNService.m_no, allMOrderNService.mo_startTime, 
+allMOrderNService.mo_star, allMOrderNService.s_price, 
+m.m_lon, m.m_lat, m.m_gu
+from (select mo.mo_no, mo.s_no, mo.m_no, mo.mo_startTime, mo.mo_star, s.s_price from t_m_order mo 
+inner join t_service s on mo.s_no=s.s_no) as allMOrderNService 
+inner join t_member m on allMOrderNService.m_no = m.m_no) as allMOrderNServiceNMember
+inner join t_e_order eo on allMOrderNServiceNMember.mo_no = eo.mo_no) as allMOrderNServiceNMemberNEOrder
+inner join t_employee e on allMOrderNServiceNMemberNEOrder.e_no = e.e_no
+where date_format(allMOrderNServiceNMemberNEOrder.mo_startTime, "%Y%m") = 
+if(substring((date_format(now(), "%Y%m")-1),5,2)='00',
+concat(substring((date_format(now(), "%Y%m")-1),1,4)-1,'12'),
+date_format(now(), "%Y%m")-1)) as allMOrderNServiceNMemberNEOrderNEmployee
+group by allMOrderNServiceNMemberNEOrderNEmployee.c_no) 
+
+as prevMonthData on totalData.c_no= prevMonthData.c_no) as scoreTable 
+left join ((select * from t_cancelCall where mo_no=#{mo_no}) as t_cancelCall) 
+on t_cancelCall.e_no = scoreTable.e_no where t_cancelCall.e_no is null
+order by totalGrade desc limit 1) as lastOne) where mo_no=#{mo_no};
+
+	
+	</update>
+	
+	
+	
+	<update id="reCreateEvent" parameterType="hashMap">
+	
+CREATE EVENT ${orderNo} ON SCHEDULE
+EVERY 1 HOUR STARTS CURRENT_TIMESTAMP + INTERVAL 1 HOUR
+DO 
+BEGIN
+Insert into t_cancelCall(mo_no,e_no) values(#{mo_no}, (select e_no_first from t_m_order where mo_no=#{mo_no}));
+if(select lastOne.e_no from
+(select
+scoreTable.e_no, scoreTable.e_name,
+scoreTable.mo_starAvg, scoreTable.lonlatGrade,
+scoreTable.profitGrade, scoreTable.subTimeGrade,
+(scoreTable.mo_starAvg+scoreTable.lonlatGrade+scoreTable.profitGrade+scoreTable.subTimeGrade) as totalGrade
+from
+(select totalData.e_no, totalData.e_name, totalData.c_no, totalData.mo_no, totalData.subTimeValue, totalData.m_lon, totalData.m_lat,
+prevMonthData.s_priceSum, if(prevMonthData.mo_starAvg>0,prevMonthData.mo_starAvg,0) as mo_starAvg,
+
+(case when (ABS(totalData.m_lon -#{lon}) + 
+(ABS(totalData.m_lat-#{lat}))*3.3) >=0.5 then 1 when
+(ABS(totalData.m_lon -#{lon}) +
+(ABS(totalData.m_lat-#{lat}))*3.3) >=0.4 then 1.5 when
+(ABS(totalData.m_lon -#{lon}) +
+(ABS(totalData.m_lat-#{lat}))*3.3) >=0.3 then 2 when
+(ABS(totalData.m_lon -#{lon}) +
+(ABS(totalData.m_lat-#{lat}))*3.3) >=0.2 then 2.5 when
+(ABS(totalData.m_lon -#{lon}) +
+(ABS(totalData.m_lat-#{lat}))*3.3) >=0.1 then 3 when
+(ABS(totalData.m_lon -#{lon}) +
+(ABS(totalData.m_lat-#{lat}))*3.3) >=0.05 then 3.5 when
+(ABS(totalData.m_lon -#{lon}) +
+(ABS(totalData.m_lat-#{lat}))*3.3) >= 0 then 4 else 0.5 end) as
+lonlatGrade,
+
+(case when (prevMonthData.s_priceSum)-#{prevMonthOutCome}=0 then 3 
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >2000000 then 1.1
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1800000 then 1.3
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1600000 then 1.5
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1400000 then 1.7
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1200000 then 1.9
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1000000 then 2.1
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >800000 then 2.3
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >100000 then 2.5
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >50000 then 2.7
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >10000 then 2.9 else 2.95 end) as
+profitGrade,
+
+(case 
+when (totalData.subTimeValue) >= 540 then 1 
+when (totalData.subTimeValue) >= 480 then 1.2
+when (totalData.subTimeValue) >= 420 then 1.4
+when (totalData.subTimeValue) >= 360 then 1.6
+when (totalData.subTimeValue) >= 300 then 1.8
+when (totalData.subTimeValue) >= 240 then 2.0
+when (totalData.subTimeValue) >= 180 then 2.2
+when (totalData.subTimeValue) >= 120 then 2.4
+when (totalData.subTimeValue) >= 60 then 2.6
+else 0.5 end) as
+subTimeGrade
+
+from 
+(select t_employee.e_no, t_employee.e_name, t_employee.c_no,
+allMOrderNServiceNMemberNEOrderEmployee.mo_no, allMOrderNServiceNMemberNEOrderEmployee.s_no, 
+allMOrderNServiceNMemberNEOrderEmployee.m_no, allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,
+(Minute(Timediff(allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,#{refuseMoNo.dateHourMinuteForNoOneEmployee}))
++HOUR(Timediff(allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,#{refuseMoNo.dateHourMinuteForNoOneEmployee}))*60) as subTimeValue,
+allMOrderNServiceNMemberNEOrderEmployee.m_lon, allMOrderNServiceNMemberNEOrderEmployee.m_lat, 
+allMOrderNServiceNMemberNEOrderEmployee.m_gu
+from t_employee
+left join 
+(select 
+allMOrderNServiceNMemberNEOrder.mo_no, allMOrderNServiceNMemberNEOrder.s_no, 
+allMOrderNServiceNMemberNEOrder.m_no, allMOrderNServiceNMemberNEOrder.mo_startTime, 
+allMOrderNServiceNMemberNEOrder.mo_star, allMOrderNServiceNMemberNEOrder.s_price, 
+allMOrderNServiceNMemberNEOrder.m_lon, allMOrderNServiceNMemberNEOrder.m_lat, 
+allMOrderNServiceNMemberNEOrder.m_gu, allMOrderNServiceNMemberNEOrder.e_no,
+e.c_no
+from 
+(select 
+allMOrderNServiceNMember.mo_no, allMOrderNServiceNMember.s_no, 
+allMOrderNServiceNMember.m_no, allMOrderNServiceNMember.mo_startTime, 
+allMOrderNServiceNMember.mo_star, allMOrderNServiceNMember.s_price, 
+allMOrderNServiceNMember.m_lon, allMOrderNServiceNMember.m_lat, allMOrderNServiceNMember.m_gu, eo.e_no
+from 
+(select allMOrderNService.mo_no, allMOrderNService.s_no, 
+allMOrderNService.m_no, allMOrderNService.mo_startTime, 
+allMOrderNService.mo_star, allMOrderNService.s_price, 
+m.m_lon, m.m_lat, m.m_gu
+from (select mo.mo_no, mo.s_no, mo.m_no, mo.mo_startTime, mo.mo_star, s.s_price from t_m_order mo 
+inner join t_service s on mo.s_no=s.s_no) as allMOrderNService 
+inner join t_member m on allMOrderNService.m_no = m.m_no) as allMOrderNServiceNMember
+inner join t_e_order eo on allMOrderNServiceNMember.mo_no = eo.mo_no) as allMOrderNServiceNMemberNEOrder
+inner join t_employee e on allMOrderNServiceNMemberNEOrder.e_no = e.e_no
+where date_format(allMOrderNServiceNMemberNEOrder.mo_startTime,"%Y%m%d") = #{refuseMoNo.dateForNoOneEmployee}) as allMOrderNServiceNMemberNEOrderEmployee
+on t_employee.e_no = allMOrderNServiceNMemberNEOrderEmployee.e_no 
+where date_format(allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,"%Y%m%d%H") != #{refuseMoNo.dateHourForNoOneEmployee} or 
+date_format(allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,"%Y%m%d%H") is null) as totalData
+left join 
+
+(select 
+allMOrderNServiceNMemberNEOrderNEmployee.c_no,
+sum(allMOrderNServiceNMemberNEOrderNEmployee.s_price) s_priceSum,  
+avg(allMOrderNServiceNMemberNEOrderNEmployee.mo_star) mo_starAvg
+from (select 
+allMOrderNServiceNMemberNEOrder.mo_no, allMOrderNServiceNMemberNEOrder.s_no, 
+allMOrderNServiceNMemberNEOrder.m_no, allMOrderNServiceNMemberNEOrder.mo_startTime, 
+allMOrderNServiceNMemberNEOrder.mo_star, allMOrderNServiceNMemberNEOrder.s_price, 
+allMOrderNServiceNMemberNEOrder.m_lon, allMOrderNServiceNMemberNEOrder.m_lat, 
+allMOrderNServiceNMemberNEOrder.m_gu, allMOrderNServiceNMemberNEOrder.e_no,
+e.c_no
+from 
+(select 
+allMOrderNServiceNMember.mo_no, allMOrderNServiceNMember.s_no, 
+allMOrderNServiceNMember.m_no, allMOrderNServiceNMember.mo_startTime, 
+allMOrderNServiceNMember.mo_star, allMOrderNServiceNMember.s_price, 
+allMOrderNServiceNMember.m_lon, allMOrderNServiceNMember.m_lat, allMOrderNServiceNMember.m_gu, eo.e_no
+from 
+(select allMOrderNService.mo_no, allMOrderNService.s_no, 
+allMOrderNService.m_no, allMOrderNService.mo_startTime, 
+allMOrderNService.mo_star, allMOrderNService.s_price, 
+m.m_lon, m.m_lat, m.m_gu
+from (select mo.mo_no, mo.s_no, mo.m_no, mo.mo_startTime, mo.mo_star, s.s_price from t_m_order mo 
+inner join t_service s on mo.s_no=s.s_no) as allMOrderNService 
+inner join t_member m on allMOrderNService.m_no = m.m_no) as allMOrderNServiceNMember
+inner join t_e_order eo on allMOrderNServiceNMember.mo_no = eo.mo_no) as allMOrderNServiceNMemberNEOrder
+inner join t_employee e on allMOrderNServiceNMemberNEOrder.e_no = e.e_no
+where date_format(allMOrderNServiceNMemberNEOrder.mo_startTime, "%Y%m") = 
+if(substring((date_format(now(), "%Y%m")-1),5,2)='00',
+concat(substring((date_format(now(), "%Y%m")-1),1,4)-1,'12'),
+date_format(now(), "%Y%m")-1)) as allMOrderNServiceNMemberNEOrderNEmployee
+group by allMOrderNServiceNMemberNEOrderNEmployee.c_no) 
+
+as prevMonthData on totalData.c_no= prevMonthData.c_no) as scoreTable 
+left join ((select * from t_cancelCall where mo_no=#{mo_no}) as t_cancelCall) 
+on t_cancelCall.e_no = scoreTable.e_no where t_cancelCall.e_no is null
+order by totalGrade desc limit 1) as lastOne) is null
+Then delete from t_cancelCall where mo_no=#{mo_no}; 
+End if;
+
+update t_m_order set e_no_first=(select lastOne.e_no from
+(select
+scoreTable.e_no, scoreTable.e_name,
+scoreTable.mo_starAvg, scoreTable.lonlatGrade,
+scoreTable.profitGrade, scoreTable.subTimeGrade,
+(scoreTable.mo_starAvg+scoreTable.lonlatGrade+scoreTable.profitGrade+scoreTable.subTimeGrade) as totalGrade
+from
+(select totalData.e_no, totalData.e_name, totalData.c_no, totalData.mo_no, totalData.subTimeValue, totalData.m_lon, totalData.m_lat,
+prevMonthData.s_priceSum, if(prevMonthData.mo_starAvg>0,prevMonthData.mo_starAvg,0) as mo_starAvg,
+
+(case when (ABS(totalData.m_lon -#{lon}) + 
+(ABS(totalData.m_lat-#{lat}))*3.3) >=0.5 then 1 when
+(ABS(totalData.m_lon -#{lon}) +
+(ABS(totalData.m_lat-#{lat}))*3.3) >=0.4 then 1.5 when
+(ABS(totalData.m_lon -#{lon}) +
+(ABS(totalData.m_lat-#{lat}))*3.3) >=0.3 then 2 when
+(ABS(totalData.m_lon -#{lon}) +
+(ABS(totalData.m_lat-#{lat}))*3.3) >=0.2 then 2.5 when
+(ABS(totalData.m_lon -#{lon}) +
+(ABS(totalData.m_lat-#{lat}))*3.3) >=0.1 then 3 when
+(ABS(totalData.m_lon -#{lon}) +
+(ABS(totalData.m_lat-#{lat}))*3.3) >=0.05 then 3.5 when
+(ABS(totalData.m_lon -#{lon}) +
+(ABS(totalData.m_lat-#{lat}))*3.3) >= 0 then 4 else 0.5 end) as
+lonlatGrade,
+
+(case when (prevMonthData.s_priceSum)-#{prevMonthOutCome}=0 then 3 
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >2000000 then 1.1
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1800000 then 1.3
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1600000 then 1.5
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1400000 then 1.7
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1200000 then 1.9
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >1000000 then 2.1
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >800000 then 2.3
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >100000 then 2.5
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >50000 then 2.7
+when (prevMonthData.s_priceSum)-#{prevMonthOutCome} >10000 then 2.9 else 2.95 end) as
+profitGrade,
+
+(case 
+when (totalData.subTimeValue) >= 540 then 1 
+when (totalData.subTimeValue) >= 480 then 1.2
+when (totalData.subTimeValue) >= 420 then 1.4
+when (totalData.subTimeValue) >= 360 then 1.6
+when (totalData.subTimeValue) >= 300 then 1.8
+when (totalData.subTimeValue) >= 240 then 2.0
+when (totalData.subTimeValue) >= 180 then 2.2
+when (totalData.subTimeValue) >= 120 then 2.4
+when (totalData.subTimeValue) >= 60 then 2.6
+else 0.5 end) as
+subTimeGrade
+
+from 
+(select t_employee.e_no, t_employee.e_name, t_employee.c_no,
+allMOrderNServiceNMemberNEOrderEmployee.mo_no, allMOrderNServiceNMemberNEOrderEmployee.s_no, 
+allMOrderNServiceNMemberNEOrderEmployee.m_no, allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,
+(Minute(Timediff(allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,#{refuseMoNo.dateHourMinuteForNoOneEmployee}))
++HOUR(Timediff(allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,#{refuseMoNo.dateHourMinuteForNoOneEmployee}))*60) as subTimeValue,
+allMOrderNServiceNMemberNEOrderEmployee.m_lon, allMOrderNServiceNMemberNEOrderEmployee.m_lat, 
+allMOrderNServiceNMemberNEOrderEmployee.m_gu
+from t_employee
+left join 
+(select 
+allMOrderNServiceNMemberNEOrder.mo_no, allMOrderNServiceNMemberNEOrder.s_no, 
+allMOrderNServiceNMemberNEOrder.m_no, allMOrderNServiceNMemberNEOrder.mo_startTime, 
+allMOrderNServiceNMemberNEOrder.mo_star, allMOrderNServiceNMemberNEOrder.s_price, 
+allMOrderNServiceNMemberNEOrder.m_lon, allMOrderNServiceNMemberNEOrder.m_lat, 
+allMOrderNServiceNMemberNEOrder.m_gu, allMOrderNServiceNMemberNEOrder.e_no,
+e.c_no
+from 
+(select 
+allMOrderNServiceNMember.mo_no, allMOrderNServiceNMember.s_no, 
+allMOrderNServiceNMember.m_no, allMOrderNServiceNMember.mo_startTime, 
+allMOrderNServiceNMember.mo_star, allMOrderNServiceNMember.s_price, 
+allMOrderNServiceNMember.m_lon, allMOrderNServiceNMember.m_lat, allMOrderNServiceNMember.m_gu, eo.e_no
+from 
+(select allMOrderNService.mo_no, allMOrderNService.s_no, 
+allMOrderNService.m_no, allMOrderNService.mo_startTime, 
+allMOrderNService.mo_star, allMOrderNService.s_price, 
+m.m_lon, m.m_lat, m.m_gu
+from (select mo.mo_no, mo.s_no, mo.m_no, mo.mo_startTime, mo.mo_star, s.s_price from t_m_order mo 
+inner join t_service s on mo.s_no=s.s_no) as allMOrderNService 
+inner join t_member m on allMOrderNService.m_no = m.m_no) as allMOrderNServiceNMember
+inner join t_e_order eo on allMOrderNServiceNMember.mo_no = eo.mo_no) as allMOrderNServiceNMemberNEOrder
+inner join t_employee e on allMOrderNServiceNMemberNEOrder.e_no = e.e_no
+where date_format(allMOrderNServiceNMemberNEOrder.mo_startTime,"%Y%m%d") = #{refuseMoNo.dateForNoOneEmployee}) as allMOrderNServiceNMemberNEOrderEmployee
+on t_employee.e_no = allMOrderNServiceNMemberNEOrderEmployee.e_no 
+where date_format(allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,"%Y%m%d%H") != #{refuseMoNo.dateHourForNoOneEmployee} or 
+date_format(allMOrderNServiceNMemberNEOrderEmployee.mo_startTime,"%Y%m%d%H") is null) as totalData
+left join 
+
+(select 
+allMOrderNServiceNMemberNEOrderNEmployee.c_no,
+sum(allMOrderNServiceNMemberNEOrderNEmployee.s_price) s_priceSum,  
+avg(allMOrderNServiceNMemberNEOrderNEmployee.mo_star) mo_starAvg
+from (select 
+allMOrderNServiceNMemberNEOrder.mo_no, allMOrderNServiceNMemberNEOrder.s_no, 
+allMOrderNServiceNMemberNEOrder.m_no, allMOrderNServiceNMemberNEOrder.mo_startTime, 
+allMOrderNServiceNMemberNEOrder.mo_star, allMOrderNServiceNMemberNEOrder.s_price, 
+allMOrderNServiceNMemberNEOrder.m_lon, allMOrderNServiceNMemberNEOrder.m_lat, 
+allMOrderNServiceNMemberNEOrder.m_gu, allMOrderNServiceNMemberNEOrder.e_no,
+e.c_no
+from 
+(select 
+allMOrderNServiceNMember.mo_no, allMOrderNServiceNMember.s_no, 
+allMOrderNServiceNMember.m_no, allMOrderNServiceNMember.mo_startTime, 
+allMOrderNServiceNMember.mo_star, allMOrderNServiceNMember.s_price, 
+allMOrderNServiceNMember.m_lon, allMOrderNServiceNMember.m_lat, allMOrderNServiceNMember.m_gu, eo.e_no
+from 
+(select allMOrderNService.mo_no, allMOrderNService.s_no, 
+allMOrderNService.m_no, allMOrderNService.mo_startTime, 
+allMOrderNService.mo_star, allMOrderNService.s_price, 
+m.m_lon, m.m_lat, m.m_gu
+from (select mo.mo_no, mo.s_no, mo.m_no, mo.mo_startTime, mo.mo_star, s.s_price from t_m_order mo 
+inner join t_service s on mo.s_no=s.s_no) as allMOrderNService 
+inner join t_member m on allMOrderNService.m_no = m.m_no) as allMOrderNServiceNMember
+inner join t_e_order eo on allMOrderNServiceNMember.mo_no = eo.mo_no) as allMOrderNServiceNMemberNEOrder
+inner join t_employee e on allMOrderNServiceNMemberNEOrder.e_no = e.e_no
+where date_format(allMOrderNServiceNMemberNEOrder.mo_startTime, "%Y%m") = 
+if(substring((date_format(now(), "%Y%m")-1),5,2)='00',
+concat(substring((date_format(now(), "%Y%m")-1),1,4)-1,'12'),
+date_format(now(), "%Y%m")-1)) as allMOrderNServiceNMemberNEOrderNEmployee
+group by allMOrderNServiceNMemberNEOrderNEmployee.c_no) 
+
+as prevMonthData on totalData.c_no= prevMonthData.c_no) as scoreTable 
+left join ((select * from t_cancelCall where mo_no=#{mo_no}) as t_cancelCall) 
+on t_cancelCall.e_no = scoreTable.e_no where t_cancelCall.e_no is null
+order by totalGrade desc limit 1) as lastOne) where mo_no=#{mo_no};
+END
+
+	</update>
+	
+	<select id="selectAllStartTimes" parameterType="String" resultType="hashMap">
+	
+		select date_format(mo_startTime,"%Y-%m-%d %H:%i") as mo_startTime, mo_orderNo from t_m_order
+		where mo_orderNo=#{mo_orderNo};
+	</select>	
+	
+	
+	
+	
+	
+	
+	***********************    콜 관련 My Call***********************
+	
+************************************스케쥴: 진화**************************************
+	
+	<select id="selectUserByInfo" parameterType="java.util.HashMap" resultType="memberVo">
+		select m_no from t_member where m_phone=#{phone}
+	</select>
+	
+	
+	<insert id="insertScdByMNoOnetime" parameterType="java.util.HashMap">
+		insert into t_m_order(mo_orderNo, m_no, mo_startTime, mo_endTime, mo_svcName, mo_cnt, mo_freqType) 
+		values(#{orderNo}, #{m_no}, #{startTime}, #{endTime}, #{service}, #{cnt}, #{unit})
+	</insert>
+	
+	
+	<select id="selectMoNoByOrderNoOnetime" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select mo_no from t_m_order where mo_orderNo=#{orderNo}
+	</select>
+	
+	<insert id="insertScdByOrderNoOnetime" parameterType="java.util.HashMap">
+		insert into t_e_order(mo_no, e_no, eo_memo) values(#{mo_no}, #{e_no}, #{comments})
+	</insert>
+		
+	
+	<insert id="insertScdByMNo" parameterType="java.util.HashMap">
+		insert into t_m_order(mo_orderNo, m_no, mo_startTime, mo_endTime, mo_svcName, mo_cnt, mo_total, mo_freqType, mo_freqCycle) values
+		<foreach collection="scheduleList" item="item" separator=",">
+		(#{orderNo}, #{m_no}, #{item.startTime}, #{item.endTime}, #{service}, #{item.cnt}, #{total}, #{unit}, #{cycle})
+		</foreach>
+	</insert>
+	
+	<select id="selectMoNoByOrderNo" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select mo_no from t_m_order where mo_orderNo=#{orderNo}
+	</select>
+	
+	<insert id="insertScdByOrderNo" parameterType="java.util.HashMap">
+		insert into t_e_order(mo_no, e_no, eo_memo) values
+		<foreach collection="mo_noList" item="item" separator=",">
+		(#{item.mo_no}, #{e_no}, #{comments})
+		</foreach> 
+	</insert>
+	
+	<insert id="insertScdToNewMember" parameterType="java.util.HashMap">
+		insert into t_member(m_name, m_address, m_phone, m_type, m_lon, m_lat, m_gu) values(#{name}, #{address}, #{phone}, #{type}, #{m_lon}, #{m_lat}, #{m_gu})
+	</insert>
+
+	*************************** 스케쥴  *************************************
+ 	스케줄리스트 
+	<select id="getScheduleList" parameterType="Integer" resultType="hashMap">
+		select t_e_order.e_no, date_format(mo_startTime, '%Y-%m-%dT%H:%i:%s') as mo_startTime, date_format(mo_endTime, '%Y-%m-%dT%H:%i:%s') as mo_endTime, m_address ,e_name,  t_m_order.mo_no
+		from ((( select * from t_employee where t_employee.c_no = #{c_no}) as e inner join t_e_order on e.e_no = t_e_order.e_no) inner join t_m_order on t_e_order.mo_no = t_m_order.mo_no) inner join t_member on t_m_order.m_no = t_member.m_no
+	</select>
+	
+ 	스케쥴 디테일 - mo_no 로 조회 
+ 	<select id="getScheduleByMONoByHB" parameterType="Integer" resultType="java.util.HashMap">
+ 	 	select m.m_name, m.m_address, m.m_phone, m.m_type, date_format(mo.mo_startTime, '%Y-%m-%dT%H:%i:%s') as mo_startTime, date_format(mo.mo_endTime, '%Y-%m-%dT%H:%i:%s') as mo_endTime, mo.mo_orderNo, mo.mo_no, mo.mo_svcName, mo.mo_freqType, mo.mo_freqCycle, mo.mo_cnt, mo.mo_total, mo.mo_memo, e.e_name, e.e_phone, eo.eo_memo, s.s_style, s.s_name
+		from t_member as m, t_m_order as mo, t_employee as e, t_e_order as eo, t_service s where mo.mo_no=#{mo_no} and mo.m_no=m.m_no and eo.mo_no=mo.mo_no and e.e_no=eo.e_no and mo.s_no=s.s_no
+	  </select>
+	 
+ 	 <select id="getScheduleByMONo" parameterType="Integer" resultType="java.util.HashMap">
+	 	select m.m_name, m.m_address, m.m_phone, m.m_type, date_format(mo.mo_startTime, '%Y-%m-%dT%H:%i:%s') as mo_startTime, date_format(mo.mo_endTime, '%Y-%m-%dT%H:%i:%s') as mo_endTime, mo.mo_orderNo, mo.mo_no, mo.mo_svcName, mo.mo_freqType, mo.mo_freqCycle, mo.mo_cnt, mo.mo_total, e.e_name, e.e_phone, eo.eo_memo 
+		from t_member m, t_m_order mo, t_employee e, t_e_order eo where mo.mo_no= #{mo_no} and mo.m_no=m.m_no and eo.mo_no=mo.mo_no and e.e_no=eo.e_no
+	</select>
+	
+	<select id="getMtypebyMONo" parameterType="Integer" resultType="String">
+ 		select m_type from t_member m, t_m_order mo where m.m_no=mo.m_no and mo.mo_no=#{mo_no}
+ 	</select>  
+	
+ 	
+ 	스케쥴 삭제 where 조건 mo_no 로 삭제 
+ 	<delete id="deleteSchedule" parameterType="Integer">
+		delete t_m_order from t_m_order where t_m_order.mo_no = #{mo_no};	
+	</delete>
+	
+
+	 <select id="getmyScheduleList" parameterType="java.util.Map" resultType="java.util.Map">
+		select date_format(mo_startTime, '%Y-%m-%dT%H:%i:%s') as mo_startTime, date_format(mo_endTime, '%Y-%m-%dT%H:%i:%s') as mo_endTime, t_m_order.mo_no
+			 , m_address, m_name, m_lon, m_lat
+			 , eo_status
+			 , e_name 
+		from ((( select * from t_employee where t_employee.c_no = #{c_no} and t_employee.e_no= #{e_no}) as e inner join t_e_order on e.e_no = t_e_order.e_no) inner join t_m_order on t_e_order.mo_no = t_m_order.mo_no) inner join t_member on t_m_order.m_no = t_member.m_no;
+			
+	</select>
+ 	
+
+	스케쥴 수정 1. mo_no로 해당 리스트 받아오기 
+		해방 서비스 통한 스케쥴  (서비스 테이블 있음 )
+			<select id="getScheduleByOdNo" parameterType="Integer" resultType="hashMap">
+				select m_type, t_member.m_no, m_lon, m_lat, m_gu, m_name, m_address, m_phone, m_type,date_format(mo_startTime, '%Y-%m-%d %H:%i') as mo_startTime, date_format(mo_endTime, '%Y-%m-%d %H:%i') as mo_endTime, mo_orderNo, t_m_order.mo_no, mo_freqType, mo_freqCycle, mo_cnt, mo_total, e_name, e_phone, t_employee.e_no, t_service.s_no, t_service.s_name, t_service.s_style
+				from ((((select * from t_m_order where mo_no = #{mo_no} ) as t_m_order inner join t_member on t_m_order.m_no = t_member.m_no) inner join t_e_order on t_m_order.mo_no = t_e_order.mo_no) inner join t_employee on t_e_order.e_no = t_employee.e_no) inner join t_service on t_m_order.s_no = t_service.s_no;
+			</select>
+		자기 스케쥴 등록 통한 스케쥴 (서비스 테이블이 없음) 
+			<select	id="getScheduleByOdNoTypeN" parameterType="Integer" resultType="hashMap">
+				select m_type, t_member.m_no, m_lon, m_lat, m_gu, m_name, m_address, m_phone, m_type,date_format(mo_startTime, '%Y-%m-%d %H:%i') as mo_startTime, date_format(mo_endTime, '%Y-%m-%d %H:%i') as mo_endTime, mo_svcName ,mo_orderNo, t_m_order.mo_no, mo_freqType, mo_freqCycle, mo_cnt, mo_total, e_name, e_phone, t_employee.e_no 
+				from (((select * from t_m_order where mo_no = #{mo_no} ) as t_m_order inner join t_member on t_m_order.m_no = t_member.m_no) inner join t_e_order on t_m_order.mo_no = t_e_order.mo_no) inner join t_employee on t_e_order.e_no = t_employee.e_no;
+			</select>
+	
+
+
+
+	스케쥴 수정 - 직원 리스트 받아오기
+	<select id="getEmployeeList" parameterType="Integer" resultType="java.util.HashMap">
+		select e_no, e_name, e_phone from t_employee where t_employee.c_no = (select c_no from t_employee where e_no = #{e_no});
+	</select>
+		
+	스케쥴 수정 사항 업데이트 
+	<update id="updateNoHaebangSch" parameterType="java.util.HashMap">
+		update t_member m, t_m_order mo, t_e_order eo 
+			set m.m_name=#{m_name}, m.m_phone=#{m_phone}, m.m_lon=#{m_lon}, m.m_lat=#{m_lat}, m.m_gu=#{m_gu}, m.m_address=#{m_address},
+				eo.e_no=#{e_no}, eo.eo_memo=#{eo_memo},
+				mo.mo_startTime=#{mo_startTime}, mo.mo_endTime=#{mo_endTime}, mo.mo_svcName=#{mo_svcName}, mo.mo_cnt = #{mo_cnt}
+			where mo.mo_no=#{mo_no}
+				and mo.m_no = m.m_no
+				and eo.mo_no = #{mo_no}
+	</update>
+
+	<update id="updateHaebangSch" parameterType="java.util.HashMap">
+		update t_m_order mo, t_e_order eo 
+			set eo.e_no=#{e_no}, 
+				mo.mo_cnt = #{mo_cnt}, mo.mo_startTime=#{mo_startTime}, mo.mo_endTime=#{mo_endTime}
+			where mo.mo_no=#{mo_no}
+				and eo.mo_no = mo.mo_no
+	</update>
+
+ 	*************************** 이주호 스케쥴  *************************************
+ 	
+ 	주호 mono 로 회원정보 가져오기(t_member, t_m_order, t_e_order, t_employee, t_service)
+ 	
+ 	
+ 	<select id="getMemberInfoByMono" parameterType="integer" resultType="java.util.HashMap">
+ 		select m_type, t_member.m_no, m_lon, m_lat, m_gu, m_name, m_address, m_phone, date_format(mo_startTime, '%Y-%m-%d %H:%i') as mo_startTime, date_format(mo_endTime, '%Y-%m-%d %H:%i') as mo_endTime, mo_orderNo, t_m_order.mo_no, mo_freqType, mo_freqCycle, mo_cnt, mo_total, e_name, e_phone, t_employee.e_no, t_service.s_no, t_service.s_name, t_service.s_style
+		from ((((select * from t_m_order where mo_no = #{mo_no} ) as t_m_order inner join t_member on t_m_order.m_no = t_member.m_no) inner join t_e_order on t_m_order.mo_no = t_e_order.mo_no) inner join t_employee on t_e_order.e_no = t_employee.e_no) inner join t_service on t_m_order.s_no = t_service.s_no;
+ 	</select>
+ 	
+ 	
+ 	<update id="statusUpdate" parameterType="java.util.HashMap">
+ 		update t_e_order set eo_status = #{eo_status} 
+ 							<if test='eo_startTime!= null'>, eo_startTime = #{eo_startTime}</if>  
+ 							<if test='eo_endTime!= null'>, eo_endTime = #{eo_endTime}</if> 
+		where mo_no = #{mo_no}			 
+ 	</update>
+ 	
+ 	
+ 	<select id="statusUpdateReturn" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+ 		 select t_m_order.mo_no, m_name, m_lon, m_lat, e_name
+		from (((select * from t_m_order where mo_no = #{mo_no} ) as t_m_order inner join t_member on t_m_order.m_no = t_member.m_no) inner join t_e_order on t_m_order.mo_no = t_e_order.mo_no) inner join t_employee on t_e_order.e_no = t_employee.e_no
+ 	</select> -->
+ 	
+ 	
+ 	
+</mapper>
+
