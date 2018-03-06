@@ -10,7 +10,7 @@
 
 	<sec:http use-expressions="true">
 		<sec:intercept-url pattern="/admin/**" 
-		                   access="hasAuthority('ROLE_ADMIN')" />
+		                   access="hasAuthority('USER_MANAGER')" />
 		<sec:intercept-url pattern="/manager/**" 
 		                   access="hasRole('ROLE_MANAGER')" />
 		<sec:intercept-url pattern="/member/**" access="isAuthenticated()" />
@@ -19,16 +19,25 @@
 		<sec:logout />
 	</sec:http>
 
-	<sec:authentication-manager>
+	 <sec:authentication-manager>
 		<sec:authentication-provider>
-			<sec:user-service>
+		<sec:jdbc-user-service data-source-ref="dataSource" />
+		</sec:authentication-provider>
+	</sec:authentication-manager>
+
+ 	
+    
+</beans>
+    
+
+
+
+<!-- 			<sec:user-service>
 				<sec:user name="bkchoi" password="1234" 
 				          authorities="ROLE_USER" />
 				<sec:user name="manager" password="qwer" 
 				          authorities="ROLE_MANAGER" />
 				<sec:user name="admin" password="asdf" 
 				          authorities="ROLE_ADMIN,ROLE_USER" />
-			</sec:user-service>
-		</sec:authentication-provider>
-	</sec:authentication-manager>
-</beans>
+ 				</sec:user-service>
+ -->

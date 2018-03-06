@@ -11,8 +11,8 @@
 </sec:authorize>
 <ul>
 	<li><a href="<c:url value='/home/main' />">/home/main</a></li>
-	<li><a href="<c:url value='/member/main' />">/member/main</a></li>
-	<li><a href="<c:url value='/manager/main' />">/manager/main</a></li>
+	 <li><a href="<c:url value='/member/main' />">/member/main</a></li>
+	<%-- <li><a href="<c:url value='/manager/main' />">/manager/main</a></li> --%>
 	<li><a href="<c:url value='/admin/main' />">/admin/main</a></li>
 	<sec:authorize access="isAuthenticated()">
 	<li><a href="<c:url value='/j_spring_security_logout' />">/j_spring_security_logout</a></li>
