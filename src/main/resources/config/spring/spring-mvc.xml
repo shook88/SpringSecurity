@@ -65,11 +65,11 @@
 
 	<mvc:default-servlet-handler />
 
-	<mvc:view-controller path="/index" view-name="index" />
-	<mvc:view-controller path="/home/main" view-name="homeMain" />
-	<!-- <mvc:view-controller path="/manager/main" view-name="managerMain" /> -->
-	<mvc:view-controller path="/admin/main" view-name="adminMain" />
-	<mvc:view-controller path="/member/main" view-name="memberMain" />
+	<mvc:view-controller path="/login" view-name="admin/loginForm" />
+	<mvc:view-controller path="/main" view-name="admin/main11" />
+	<mvc:view-controller path="/admin" view-name="admin/adminMain" />
+	<mvc:view-controller path="/manager1" view-name="admin/manager" />
+	<mvc:view-controller path="/accessDenied" view-name="error/403" />
 
 	<bean id="viewResolver"
 		class="org.springframework.web.servlet.view.InternalResourceViewResolver">

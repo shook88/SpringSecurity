@@ -8,6 +8,74 @@
        http://www.springframework.org/schema/security
        http://www.springframework.org/schema/security/spring-security.xsd">
 
+	<sec:http pattern="/**/*.js" security="none"/>
+	<sec:http pattern="/**/*.css" security="none"/>
+	<sec:http pattern="/images/*" security="none"/>
+
+	<sec:http auto-config="true" use-expressions="true" >
+	<sec:intercept-url pattern="/admin/**" access="hasRole('ADMIN')"/>
+	<sec:intercept-url pattern="/manager1/**" access="hasRole('MANAGER1')"/>
+	<sec:intercept-url pattern="/login" access="permitAll"/>
+	<sec:intercept-url pattern="/main" access="permitAll"/>
+	<!--  -->
+	
+	<sec:intercept-url pattern="/**" access="permitAll"/>
+	<sec:access-denied-handler error-page="/accessDenied"/>
+	<sec:form-login 
+	username-parameter="loginid" 
+	password-parameter="loginpwd"
+	login-page="/login"
+	login-processing-url="/loginProcess"  
+	default-target-url="/admin" 
+	authentication-success-handler-ref="customAuthenticationSuccessHandler"
+	authentication-failure-handler-ref="customAuthenticationFailureHandler"
+	
+	/>
+<!-- 	authentication-failure-url="/login?fail=true" -->
+	<sec:logout logout-url="/logout" logout-success-url="/main"/>
+	</sec:http>
+
+
+<bean id="customAuthenticationSuccessHandler" class="com.homeshowping.security.CustomAuthenticationSuccessHandler">
+	<property name="targetUrlParameter" value="loginRedirect" />
+	<property name="useReferer" value="false" />
+	<property name="defaultUrl" value="/main" />
+</bean>
+
+
+<bean id="customAuthenticationFailureHandler" class="com.homeshowping.security.CustomAuthenticationFailureHandler">
+	<property name="loginidname" value="loginid" />
+	<property name="loginpasswdname" value="loginpwd" />
+ 	<property name="loginredirectname" value="loginRedirect" /> 
+	<property name="exceptionmsgname" value="securityexceptionmsg" />
+	<property name="defaultFailureUrl" value="/login?fail=true" />
+</bean>
+
+
+
+<bean id="customJdbcDaoImpl" class="com.homeshowping.security.CustomJdbcDaoImpl">
+	<property name="dataSource" ref="dataSource" />
+	<property name="rolePrefix" value="" />
+	<property name="usersByUsernameQuery" value="SELECT ID, PASSWORD, NAME FROM MEMBERINFO WHERE ID=?" />
+	<property name="authoritiesByUsernameQuery" value="SELECT AUTHORITY FROM MEMBER_ROLE WHERE ID=?" />
+	<property name="enableGroups" value="false" />
+</bean>
+<sec:authentication-manager>
+	<sec:authentication-provider user-service-ref="customJdbcDaoImpl" />
+</sec:authentication-manager>
+
+<!-- 
+ <sec:authentication-manager>
+		<sec:authentication-provider>
+			<sec:user-service>
+			<sec:user name="user1" password="user1password" authorities="ROLE_USER"/>
+			<sec:user name="admin1" password="admin1password" authorities="ROLE_ADMIN"/>
+			
+			</sec:user-service>
+		</sec:authentication-provider>
+	</sec:authentication-manager> 
+ -->
+<!-- 
 	<sec:http use-expressions="true">
 		<sec:intercept-url pattern="/admin/**" 
 		                   access="hasAuthority('USER_MANAGER')" />
@@ -23,7 +91,7 @@
 		<sec:authentication-provider>
 		<sec:jdbc-user-service data-source-ref="dataSource" />
 		</sec:authentication-provider>
-	</sec:authentication-manager>
+	</sec:authentication-manager> -->
 
  	
     

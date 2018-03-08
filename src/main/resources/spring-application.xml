@@ -54,9 +54,11 @@
 		<property name="basenames">
 			<list>
 				<value>message.label</value>
+				<value>message.spring_security_messages</value>
 			</list>
 		</property>
 		<property name="defaultEncoding" value="UTF-8" />
+		<property name="cacheSeconds" value="5"/>
 	</bean>	
 
 <!-- 	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
